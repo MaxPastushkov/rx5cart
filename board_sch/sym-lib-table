@@ -1,0 +1,3 @@
+(sym_lib_table
+  (lib (name rx5cart_symbols)(type Legacy)(uri ${KIPRJMOD}/rx5cart_symbols.lib)(options "")(descr ""))
+)
