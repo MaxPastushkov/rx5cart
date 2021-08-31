@@ -1,4 +1,4 @@
-# rx5cart
+# RX5Cart
 A replacement for the Yamaha RAM4 cartridge, based on [GliGli's RX5USB](https://github.com/gligli/rx5usb)
 
 **WARNING: This project is currently incomplete. Do not use the board yet! The PCB and firmware have not been tested!**
