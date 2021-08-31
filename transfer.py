@@ -7,6 +7,14 @@ import zlib
 # Due to size of serial buffer on teensy
 write_blocksize = 64
 
+
+def progressBar(current, total, barLength = 25):
+    percent = (float(current) * 100 / total) + 1
+    arrow   = '-' * int(percent/100 * barLength - 1) + '>'
+    spaces  = ' ' * (barLength - len(arrow))
+
+    print('Progress: [%s%s] %d %%' % (arrow, spaces, percent), end='\r')
+
 operation = ""
 filepath = ""
 device = "/dev/ttyACM0"
@@ -54,7 +62,7 @@ try:
             print("Checksum is " + str(crc))
             
             print("Sending checksum...")
-            ser.write(crc.to_bytes(4, 'little'))
+            ser.write(crc.to_bytes(4, "little"))
             
             print("Waiting for status...")
             status = ser.read(1)
@@ -78,19 +86,19 @@ try:
             buff = f.read(0x20000)
             
             crc = zlib.crc32(buff) & 0xFFFFFFFF # Calculate checksum
-            crc = crc.to_bytes(4, 'little')
             
             ser.write(b'w') # Send start signal
             
             print("Sending data...")
             for i in range(0, 0x20000, write_blocksize):
-                
                 blockbuff = buff[i:i+write_blocksize] # Get single chunk
                 ser.write(blockbuff)
                 ser.read(1) # Wait for acknowledgement
+                progressBar(i, 0x20000)
             
-            print("Waiting for checksum...")
+            print("\nWaiting for checksum...")
             devicecrc = ser.read(4) # Get recipient checksum
+            devicecrc = int.from_bytes(devicecrc, "little")
             print("Received checksum: " + str(devicecrc))
             
             if devicecrc != crc:
