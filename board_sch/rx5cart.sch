@@ -951,12 +951,12 @@ Wire Wire Line
 $Comp
 L rx5cart_symbols:VCC #PWR0102
 U 1 1 612E5209
-P 7550 4850
-F 0 "#PWR0102" H 7550 4950 30  0001 C CNN
-F 1 "VCC" H 7550 4950 30  0000 C CNN
-F 2 "" H 7550 4850 50  0001 C CNN
-F 3 "" H 7550 4850 50  0001 C CNN
-	1    7550 4850
+P 7550 4750
+F 0 "#PWR0102" H 7550 4850 30  0001 C CNN
+F 1 "VCC" H 7550 4850 30  0000 C CNN
+F 2 "" H 7550 4750 50  0001 C CNN
+F 3 "" H 7550 4750 50  0001 C CNN
+	1    7550 4750
 	1    0    0    -1  
 $EndComp
 $Comp
@@ -1032,6 +1032,50 @@ Wire Wire Line
 	13800 2350 13800 1900
 Connection ~ 13800 1900
 Connection ~ 12450 5650
+$Comp
+L rx5cart_symbols:R R2
+U 1 1 6174B687
+P 8250 4700
+F 0 "R2" V 8330 4700 50  0000 C CNN
+F 1 "10k" V 8250 4700 50  0000 C CNN
+F 2 "rx5cart_footprints:RESISTOR" H 8250 4700 50  0001 C CNN
+F 3 "" H 8250 4700 50  0001 C CNN
+	1    8250 4700
+	0    1    1    0   
+$EndComp
+$Comp
+L rx5cart_symbols:R R3
+U 1 1 6175125B
+P 8250 4850
+F 0 "R3" V 8330 4850 50  0000 C CNN
+F 1 "10k" V 8250 4850 50  0000 C CNN
+F 2 "rx5cart_footprints:RESISTOR" H 8250 4850 50  0001 C CNN
+F 3 "" H 8250 4850 50  0001 C CNN
+	1    8250 4850
+	0    1    1    0   
+$EndComp
+Wire Wire Line
+	8000 4700 8000 4850
+Wire Wire Line
+	8000 4850 7550 4850
+Connection ~ 8000 4850
+Connection ~ 7550 4850
+Entry Wire Line
+	8400 5100 8500 5000
+Wire Wire Line
+	8500 4850 8500 5000
+Entry Wire Line
+	8500 5100 8600 5000
+Wire Wire Line
+	8600 5000 8600 4700
+Wire Wire Line
+	8600 4700 8500 4700
+Text Label 8500 5000 2    60   ~ 0
+CE0
+Text Label 8600 5000 0    60   ~ 0
+CE1
+Wire Wire Line
+	7550 4750 7550 4850
 Wire Bus Line
 	11700 5100 13650 5100
 Wire Bus Line
