@@ -12,40 +12,63 @@
 #define CE1 22 // PB2
 #define A16 20 // PB0
 
-char readRAM(uint32_t addr);
-void writeRAM(uint32_t addr, char data);
+unsigned char readRAM(uint32_t addr);
+void writeRAM(uint32_t addr, unsigned char data);
 
-SoftwareSerial debugSer = SoftwareSerial(8, 9);
+SoftwareSerial debugSer = SoftwareSerial(19, 9); // 19 is unused
+
+bool freeze = false;
 
 void setup() {
 
   Serial.begin(115200);
   Serial.setTimeout(30000);
 
-  // Wait for unplug
-  pinMode(RX5DETECT, INPUT);
-  while (digitalRead(RX5DETECT)) {
-    delay(500);
-  }
-  delay(200); // Allow cartrigde to be fully removed
-
-  pinMode(8, INPUT);
-  pinMode(9, OUTPUT);
+  pinMode(8, OUTPUT); // PE0
+  digitalWrite(8, LOW); // Ground
+  
+  pinMode(9, OUTPUT); // PE1
   debugSer.begin(9600);
+
+  pinMode(RX5DETECT, INPUT);
+}
+
+void loop() {
+
+  // Release bus and wait
+  if (freeze) {
+    while (1);
+  }
+
+  // Disable everything
+  PORTB = 0b00111100;
+
+  char operation;
+
+  debugSer.println("Waiting for unplug and start symbol...");
+
+  // Get start signal
+  while (1) {
+
+    if (digitalRead(RX5DETECT)) {
+      Serial.read(); // Clear buffer
+      continue;
+    }
+    
+    if (Serial.available()) {
+      operation = Serial.read();
+      break;
+    }
+  }
+//  while (!Serial.available() || digitalRead(RX5DETECT));
+//  
+//  
+//  char operation = Serial.read();
 
   // Set ports B, C, D to output
   DDRB = 0xFF;
   DDRC = 0xFF;
   DDRD = 0xFF;
-
-  // Disable everything
-  PORTB = 0b00111100;
-
-  debugSer.println("Waiting for start symbol...");
-
-  // Get start signal
-  while (!Serial.available());
-  char operation = Serial.read();
 
   CRC32 crc;
   char buff[BLOCKSIZE];
@@ -57,7 +80,7 @@ void setup() {
     // Read block
     for (unsigned int i = 0; i < 0x20000 / BLOCKSIZE; i++) {
       for (unsigned int j = 0; j < BLOCKSIZE; j++) {
-        buff[j] = readRAM((i * BLOCKSIZE) + j);
+        buff[j] = readRAM((uint32_t)i * BLOCKSIZE + j);
         crc.update(buff[j]); // Add to CRC buffer
       }
 
@@ -99,6 +122,8 @@ void setup() {
       unsigned int bytesavailable = 0;
       while (!(bytesavailable = Serial.available()));
       Serial.readBytes(buff, bytesavailable); // Receive block
+
+      //writeRAM(0, 0xAA);
   
       // Write block
       for (unsigned int j = 0; j < bytesavailable; j++) {
@@ -120,13 +145,28 @@ void setup() {
     Serial.write((char *)&mycrc, 4);
 
     debugSer.println("Done!");
+    
+    //debugSer.println(readRAM(0), HEX);
+
   }
+  
+  // Reset pins
+  DDRB = 0x00;
+  DDRC = 0x00;
+  DDRD = 0x00;
+  DDRF = 0x00;
+  PORTC = 0b00000000;
+  PORTD = 0b00000000;
+  PORTF = 0b00000000;
+
+  // Pull up pins
+  PORTB = 0b00111100;
+
+  //freeze = true;
 }
 
-void loop() {
-}
-
-char readRAM(uint32_t addr) {
+unsigned char readRAM(uint32_t addr) {
+  
   bool a16 = (addr >> 16) & 0x1;
   bool a17 = (addr >> 17) & 0x1;
 
@@ -145,7 +185,7 @@ char readRAM(uint32_t addr) {
   return PINF; // Return data
 }
 
-void writeRAM(uint32_t addr, char data) {
+void writeRAM(uint32_t addr, unsigned char data) {
   bool a16 = (addr >> 16) & 0x1;
   bool a17 = (addr >> 17) & 0x1;
 
@@ -167,4 +207,8 @@ void writeRAM(uint32_t addr, char data) {
   // Write data
   digitalWrite(WE, LOW);
   digitalWrite(WE, HIGH);
+
+  // Reset CE
+  digitalWrite(CE0, HIGH);
+  digitalWrite(CE1, HIGH);
 }
